@@ -1,0 +1,91 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from google.colab import drive
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score, mean_absolute_error
+
+# Mount Google Drive
+drive.mount('/content/drive')
+
+# Read the dataset
+df = pd.read_csv("/content/drive/My Drive/Housing/Housing.csv")
+
+# Display the first 10 rows of the dataset
+print("FIRST 10 ROWS OF THE DATASET:")
+print(df.head(10))
+
+# List columns
+print("\nCOLUMNS:")
+print(df.columns)
+
+# Size of the dataset
+print("\nSIZE OF THE DATASET:")
+print(df.shape)
+
+# Data types of the columns of the dataset
+print("\nDATA TYPES OF THE COLUMNS OF THE DATASET:")
+print(df.info())
+
+# Check for null values
+print("\nCHECKING FOR NULL VALUES:")
+print(df.isnull().sum())
+
+# Remove duplicate values
+rs, cs = df.shape
+df.drop_duplicates(inplace=True)
+if df.shape == (rs, cs):
+    print('\n\033[1mInference:\033[0m The dataset doesn\'t have any duplicates')
+else:
+    print(f'\n\033[1mInference:\033[0m Number of duplicates dropped/fixed ---> {rs - df.shape[0]}')
+
+# Convert categorical data columns to numeric form
+categorical_cols = ["mainroad", "guestroom", "basement", "hotwaterheating", "airconditioning", "prefarea", "furnishingstatus"]
+le = LabelEncoder()
+df[categorical_cols] = df[categorical_cols].apply(le.fit_transform)
+
+# Display dataset after conversion
+print("\nAFTER CONVERTING OUR DATASET LOOKS LIKE THIS:")
+print(df.head())
+
+# Correlation between the columns
+corr = df.corr()
+plt.figure(figsize=(12, 7))
+sns.heatmap(corr, cmap='coolwarm', annot=True)
+plt.show()
+
+# Splitting the dataset into features and target
+X = df.drop(['price'], axis=1)
+y = df['price']
+
+# Display features and target
+print(X)
+print(y)
+
+# Splitting the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Length of X_train and X_test
+print("\nLENGTH OF X_train AND X_test:")
+print(len(X_train), len(X_test))
+
+# Creating a linear regression model
+model = LinearRegression()
+
+# Fitting the data into the model
+model.fit(X_train, y_train)
+
+# Predicting the outcomes
+y_predict = model.predict(X_test)
+print("\nPREDICTED PRICES:")
+print(y_predict)
+
+# Evaluate the model
+score = r2_score(y_test, y_predict)
+mae = mean_absolute_error(y_test, y_predict)
+print("\nMODEL EVALUATION:")
+print("R2 Score:", score)
+print("Mean Absolute Error:", mae)
